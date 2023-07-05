@@ -6,7 +6,7 @@ open Core
    the background image and returning the foreground image. *)
 let transform ~foreground ~background =
   Image.mapi foreground ~f:(fun ~x ~y (r, g, b) ->
-    if r + g > b then Image.get background ~x ~y else r, g, b)
+    if r + g > b then r, g, b else Image.get background ~x ~y)
 ;;
 
 let command =
