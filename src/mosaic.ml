@@ -17,16 +17,39 @@ let mse ~reg_a ~reg_b ~w ~h =
 ;;
 
 (* You need to change the implementation of this function so that it does
-   something to the image instead of just leaving it untouched. -> need to check if provided width 
-   and height are greater than the image and do error checkig *)
-let transform image width height moves = 
+   something to the image instead of just leaving it untouched. -> need to
+   check if provided width and height are greater than the image and do error
+   checking *)
+let transform image width height moves =
   let max_start_x = Image.width image - width in
-  let max_start_y = Image.height image - height in 
-  let rand_x = Random.int max_start_x in 
-  let rand_y = Random.int max_start_y in 
-  let region_1 = Image.slice image 
-
-
+  let max_start_y = Image.height image - height in
+  let rand_x = Random.int max_start_x in
+  let rand_y = Random.int max_start_y in
+  let region_1 =
+    Image.slice
+      image
+      ~x_start:rand_x
+      ~y_start:rand_y
+      ~x_end:(rand_x + width)
+      ~y_end:(rand_y + height)
+  in
+  let targets = 
+  Image.foldi ~init:[] image ~f:(fun ~x ~y targets (r, g, b) ->
+    if x % width = 0
+       && y % height = 0
+       && x + width < Image.width image
+       && y + width < Image.height image
+    then (
+      let region_b =
+        (Image.slice
+          image
+          ~x_start:x
+          ~y_start:y
+          ~x_end:(x + width)
+          ~y_end:(y + height)) in 
+     targets @ [ region_b ])
+    else targets)
+    
 ;;
 
 let command =
