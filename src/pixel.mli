@@ -11,6 +11,8 @@ open! Core
     channels of an RGB color pixel. *)
 type t = int * int * int [@@deriving sexp]
 
+type f = float * float * float [@@deriving sexp]
+
 (** [red t] returns the value of the red channel of the pixel [t]. *)
 val red : t -> int
 
@@ -29,7 +31,6 @@ val zero : t
 val ( + ) : t -> t -> t
 
 val ( - ) : t -> t -> t
-val ( +. ) : t -> t -> t
 
 (** [of_int x] returns an equivalent pixel value, where each channel has the
     same integer value [x]. This function is most useful when working with
