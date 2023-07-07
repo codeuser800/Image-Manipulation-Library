@@ -6,6 +6,7 @@ open Core
 let calc_horizontal_grad ~img_slice =
   let grad = [| [| -1; 0; 1 |]; [| -2; 0; 2 |]; [| -1; 0; 1 |] |] in
   Image.foldi img_slice ~init:0 ~f:(fun ~x ~y sum (r, _g, _b) ->
+    Core.print_s [%message (Array.get (Array.get grad 1) 0 : int)];
     sum + (Array.get (Array.get grad x) y * r))
 ;;
 
@@ -19,6 +20,7 @@ let transform image =
   let image = Grayscale.transform image in
   let image = Blur.transform image ~radius:2 in
   let threshold = 0.4 *. float_of_int (Image.max_val image) in
+  let max_value = Image.max_val image in
   Image.mapi image ~f:(fun ~x ~y (_r, _g, _b) ->
     if x - 1 >= 0
        && y - 1 >= 0
@@ -36,7 +38,9 @@ let transform image =
       let gx = calc_horizontal_grad ~img_slice:slice in
       let gy = calc_vertical_grad ~img_slice:slice in
       let g = sqrt (float_of_int (gx * gx) +. float_of_int (gy * gy)) in
-      if Float.( > ) g threshold then 0, 0, 0 else 1, 1, 1)
+      if Float.( > ) g threshold
+      then 0, 0, 0
+      else max_value, max_value, max_value)
     else 0, 0, 0)
 ;;
 
