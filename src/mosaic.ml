@@ -39,10 +39,10 @@ let transform image ~width ~height =
         image
         ~init:(region_1, 0, 0, Float.infinity)
         ~f:(fun ~x ~y (best_img, sx, sy, best_mse) (_r, _g, _b) ->
-        if (x <> 0 && width % x = 0)
-           && (y <> 0 && height % y = 0)
+        if (x <> 0 && x % width = 0)
+           && (y <> 0 && y % height = 0)
            && x + width < Image.width image
-           && y + width < Image.height image
+           && y + height < Image.height image
         then (
           let region_b =
             Image.slice
