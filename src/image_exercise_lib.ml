@@ -9,5 +9,6 @@ let command =
     ; "dither", Dither.command
     ; "stego", Steganography.command
     ; "mosaic", Mosaic.command
+    ; "edge", Edge_detection.command
     ]
 ;;
