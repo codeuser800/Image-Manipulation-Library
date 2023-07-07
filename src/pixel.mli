@@ -11,8 +11,6 @@ open! Core
     channels of an RGB color pixel. *)
 type t = int * int * int [@@deriving sexp]
 
-type f = float * float * float [@@deriving sexp]
-
 (** [red t] returns the value of the red channel of the pixel [t]. *)
 val red : t -> int
 

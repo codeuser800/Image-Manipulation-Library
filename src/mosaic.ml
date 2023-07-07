@@ -2,7 +2,7 @@ open Core
 
 (* Gives one float MSE value for the comparison of the two regions *)
 
-let mse ~reg_a ~reg_b ~w ~h =
+let mse_calc ~reg_a ~reg_b ~w ~h =
   let w = float_of_int w in
   let h = float_of_int h in
   let rm, gm, bm =
@@ -13,48 +13,71 @@ let mse ~reg_a ~reg_b ~w ~h =
   in
   let factor = 1. /. (w *. h) in
   let rm, gm, bm = float_of_int rm, float_of_int gm, float_of_int bm in
-  (factor *. rm) +. (factor *. gm) +. (factor *. bm)
+  (factor *. rm) +. (factor *. gm) +. (factor *. bm /. 3.)
 ;;
 
 (* You need to change the implementation of this function so that it does
    something to the image instead of just leaving it untouched. -> need to
    check if provided width and height are greater than the image and do error
-   checking *)
-let transform image width height moves =
+   checking --> implement a for loop to go through the image *)
+let transform image ~width ~height =
   let max_start_x = Image.width image - width in
   let max_start_y = Image.height image - height in
-  let rand_x = Random.int max_start_x in
-  let rand_y = Random.int max_start_y in
-  let region_1 =
-    Image.slice
-      image
-      ~x_start:rand_x
-      ~y_start:rand_y
-      ~x_end:(rand_x + width)
-      ~y_end:(rand_y + height)
-  in
-  let targets = 
-  Image.foldi ~init:[] image ~f:(fun ~x ~y targets (r, g, b) ->
-    if x % width = 0
-       && y % height = 0
-       && x + width < Image.width image
-       && y + width < Image.height image
-    then (
-      let region_b =
-        (Image.slice
+  for _i = 1 to 1000 do
+    let rand_x = Random.int max_start_x in
+    let rand_y = Random.int max_start_y in
+    let region_1 =
+      Image.slice
+        image
+        ~x_start:rand_x
+        ~y_start:rand_y
+        ~x_end:(rand_x + width)
+        ~y_end:(rand_y + height)
+    in
+    let to_swap, swap_x, swap_y, _ =
+      Image.foldi
+        image
+        ~init:(region_1, 0, 0, Float.infinity)
+        ~f:(fun ~x ~y (best_img, sx, sy, best_mse) (_r, _g, _b) ->
+        if (x <> 0 && width % x = 0)
+           && (y <> 0 && height % y = 0)
+           && x + width < Image.width image
+           && y + width < Image.height image
+        then (
+          let region_b =
+            Image.slice
+              image
+              ~x_start:x
+              ~y_start:y
+              ~x_end:(x + width)
+              ~y_end:(y + height)
+          in
+          let mse_curr =
+            mse_calc ~reg_a:region_1 ~reg_b:region_b ~w:width ~h:height
+          in
+          if Float.( < ) mse_curr best_mse
+          then region_b, x, y, mse_curr
+          else best_img, sx, sy, best_mse)
+        else best_img, sx, sy, best_mse)
+    in
+    let _new_img =
+      Image.mapi to_swap ~f:(fun ~x ~y (r, g, b) ->
+        Image.set
           image
-          ~x_start:x
-          ~y_start:y
-          ~x_end:(x + width)
-          ~y_end:(y + height)) in 
-     targets @ [ region_b ])
-    else targets)
-    
+          ~x:(swap_x + x)
+          ~y:(swap_y + y)
+          (Image.get image ~x:(rand_x + x) ~y:(rand_y + y));
+        Image.set image ~x:(rand_x + x) ~y:(rand_y + y) (r, g, b);
+        r, g, b)
+    in
+    ()
+  done;
+  Image.copy image
 ;;
 
 let command =
   Command.basic
-    ~summary:"Convert an image to grayscale"
+    ~summary:"Convert an image to a mosaic"
     [%map_open.Command
       let filename =
         flag
@@ -63,7 +86,9 @@ let command =
           ~doc:"IMAGE_FILE the PPM image file"
       in
       fun () ->
-        let image = Image.load_ppm ~filename |> transform in
+        let image =
+          Image.load_ppm ~filename |> transform ~width:10 ~height:10
+        in
         Image.save_ppm
           image
           ~filename:

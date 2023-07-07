@@ -1,4 +1,4 @@
 open Core
 
-val transform : Image.t -> radius:int -> Image.t
+val transform : Image.t -> width:int -> height:int -> Image.t
 val command : Command.t
