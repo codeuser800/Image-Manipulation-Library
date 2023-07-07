@@ -20,10 +20,10 @@ let mse_calc ~reg_a ~reg_b ~w ~h =
    something to the image instead of just leaving it untouched. -> need to
    check if provided width and height are greater than the image and do error
    checking --> implement a for loop to go through the image *)
-let transform image ~width ~height =
+let transform image ~width ~height ~moves =
   let max_start_x = Image.width image - width in
   let max_start_y = Image.height image - height in
-  for _i = 1 to 1000 do
+  for _i = 1 to moves do
     let rand_x = Random.int max_start_x in
     let rand_y = Random.int max_start_y in
     let region_1 =
@@ -84,10 +84,25 @@ let command =
           "filename"
           (required Command.Param.string)
           ~doc:"IMAGE_FILE the PPM image file"
+      and moves =
+        flag
+          "moves"
+          (required Command.Param.int)
+          ~doc:"number of moves for the transform"
+      and width =
+        flag
+          "width"
+          (required Command.Param.int)
+          ~doc:"width of image regions"
+      and height =
+        flag
+          "height"
+          (required Command.Param.int)
+          ~doc:"height of image regions"
       in
       fun () ->
         let image =
-          Image.load_ppm ~filename |> transform ~width:10 ~height:10
+          Image.load_ppm ~filename |> transform ~width ~height ~moves
         in
         Image.save_ppm
           image
