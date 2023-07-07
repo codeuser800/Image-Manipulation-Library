@@ -10,5 +10,6 @@ let command =
     ; "stego", Steganography.command
     ; "mosaic", Mosaic.command
     ; "edge", Edge_detection.command
+    ; "solarize", Solarization.command
     ]
 ;;
